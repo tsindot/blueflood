@@ -37,7 +37,7 @@ public class ShardStateManager {
     final Set<Integer> shards; // Managed shards
     final Map<Integer, ShardToGranularityMap> shardToGranularityStates = new HashMap<Integer, ShardToGranularityMap>();
     private final Ticker serverTimeMillisecondTicker;
-    final long millisInCatchPeriod = Configuration.getInstance().getIntegerProperty("CATCH_UP_PERIOD")*60*60*1000;
+    final long millisAbsoluteTimeStamp = Configuration.getInstance().getLongProperty("CATCH_UP_ABSOLUTE_TS");
 
     private static final Histogram timeSinceUpdate = Metrics.histogram(RollupService.class, "Shard Slot Time Elapsed scheduleSlotsOlderThan");
     // todo: CM_SPECIFIC verify changing metric class name doesn't break things.
@@ -253,7 +253,7 @@ public class ShardStateManager {
                     if (timeElapsed <= maxAgeMillis) {
                         continue;
                     }
-                    if (timeElapsed >= millisInCatchPeriod) {
+                    if (update.getTimestamp() < millisAbsoluteTimeStamp) {
                         catchPeriodDroppedSlots.inc();
                         continue;
                     }
